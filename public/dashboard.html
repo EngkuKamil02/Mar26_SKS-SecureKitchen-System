@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SecureKitchen | Smart Safety</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #f1f5f9;
+  color: #0f172a;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:#f1f5f9; }
+::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+
+/* ══ AUTH ══ */
+#auth-screen {
+  position:fixed; inset:0; z-index:100;
+  display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 50%, #fefce8 100%);
+  padding:16px;
+}
+
+.auth-box {
+  width:100%; max-width:400px;
+  background:#fff;
+  border-radius:24px;
+  padding:40px 36px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 20px 60px -10px rgba(0,0,0,0.12);
+  animation: fadeUp .35s ease;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.auth-logo { text-align:center; margin-bottom:32px; }
+.auth-logo .logo-icon {
+  width:64px; height:64px; margin:0 auto 16px;
+  background:linear-gradient(135deg, #dbeafe, #dcfce7);
+  border-radius:18px; border:1.5px solid #bfdbfe;
+  display:flex; align-items:center; justify-content:center; font-size:28px;
+}
+.auth-logo h1 { font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px; margin-bottom:4px; }
+.auth-logo p  { font-size:13px; color:#94a3b8; }
+
+.auth-tabs {
+  display:flex; gap:3px; background:#f8fafc; border:1px solid #e2e8f0;
+  border-radius:12px; padding:3px; margin-bottom:24px;
+}
+.auth-tab {
+  flex:1; padding:9px; border:none; border-radius:9px;
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all .2s; background:transparent; color:#94a3b8;
+}
+.auth-tab.active { background:#fff; color:#3b82f6; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; letter-spacing:0.3px; }
+.field-wrap { position:relative; }
+.field-wrap input {
+  width:100%; background:#f8fafc; border:1.5px solid #e2e8f0;
+  border-radius:10px; padding:12px 42px 12px 14px;
+  font-family:'Inter',sans-serif; font-size:14px; color:#0f172a;
+  outline:none; transition:all .2s;
+}
+.field-wrap input:focus { border-color:#3b82f6; background:#fff; box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+.field-wrap input::placeholder { color:#cbd5e1; }
+.eye-btn {
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; font-size:14px; color:#94a3b8; transition:color .2s;
+}
+.eye-btn:hover { color:#3b82f6; }
+
+.auth-submit {
+  width:100%; padding:13px; margin-top:8px;
+  background:linear-gradient(135deg, #3b82f6, #06b6d4);
+  border:none; border-radius:10px; color:#fff;
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; transition:all .2s;
+  box-shadow:0 4px 14px rgba(59,130,246,0.35);
+}
+.auth-submit:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(59,130,246,0.4); }
+.auth-submit:active { transform:translateY(0); }
+
+.auth-err {
+  font-size:12px; color:#ef4444; background:#fef2f2; border:1px solid #fecaca;
+  border-radius:8px; padding:8px 12px; margin-top:4px; display:none; text-align:center;
+}
+.auth-err.show { display:block; }
+.auth-ok {
+  font-size:12px; color:#10b981; background:#f0fdf4; border:1px solid #bbf7d0;
+  border-radius:8px; padding:8px 12px; margin-top:4px; display:none; text-align:center;
+}
+.auth-ok.show { display:block; }
+
+/* ══ APP ══ */
+#app { display:none; min-height:100vh; }
+
+/* Topbar */
+.topbar {
+  position:sticky; top:0; z-index:50;
+  height:64px; padding:0 28px;
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid #e2e8f0;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.tb-brand { display:flex; align-items:center; gap:12px; }
+.tb-brand-icon {
+  width:36px; height:36px; border-radius:10px;
+  background:linear-gradient(135deg, #eff6ff, #dcfce7);
+  border:1.5px solid #bfdbfe;
+  display:flex; align-items:center; justify-content:center; font-size:16px;
+}
+.tb-brand-name { font-size:16px; font-weight:800; color:#0f172a; letter-spacing:-0.3px; }
+.tb-brand-sub  { font-size:10px; color:#94a3b8; font-weight:500; letter-spacing:0.5px; margin-top:1px; }
+
+.tb-right { display:flex; align-items:center; gap:10px; }
+.user-chip {
+  display:flex; align-items:center; gap:8px;
+  background:#f8fafc; border:1.5px solid #e2e8f0;
+  border-radius:40px; padding:5px 14px 5px 6px;
+}
+.user-av {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg, #3b82f6, #06b6d4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:#fff;
+}
+.user-name { font-size:13px; font-weight:600; color:#0f172a; }
+.role-tag {
+  padding:3px 10px; border-radius:20px;
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+}
+.role-admin  { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
+.role-viewer { background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; }
+.logout-btn {
+  background:#fff; border:1.5px solid #e2e8f0; border-radius:40px;
+  color:#64748b; padding:7px 16px;
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.logout-btn:hover { border-color:#ef4444; color:#ef4444; }
+
+/* Alarm */
+#alarm-banner {
+  display:none; padding:13px 28px;
+  background:#fef2f2; border-bottom:2px solid #fca5a5;
+  align-items:center; justify-content:space-between;
+}
+#alarm-banner.active { display:flex; }
+.alarm-txt { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:700; color:#dc2626; }
+.alarm-blink { width:8px; height:8px; background:#ef4444; border-radius:50%; animation:blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.alarm-reset {
+  background:#fff; border:1.5px solid #ef4444; border-radius:20px;
+  padding:6px 18px; font-family:'Inter',sans-serif;
+  font-size:12px; font-weight:700; color:#ef4444; cursor:pointer; transition:all .2s;
+}
+.alarm-reset:hover { background:#ef4444; color:#fff; }
+
+/* Main */
+.main { padding:24px 28px; max-width:1400px; margin:0 auto; }
+
+/* Stat row */
+.stat-row {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px; margin-bottom:28px;
+}
+.stat-card {
+  background:#fff; border:1.5px solid #e2e8f0; border-radius:16px;
+  padding:18px 20px; display:flex; align-items:center; gap:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all .2s;
+}
+.stat-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.08); border-color:#bfdbfe; }
+.stat-ic {
+  width:44px; height:44px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;
+}
+.ic-blue   { background:#eff6ff; }
+.ic-green  { background:#f0fdf4; }
+.ic-amber  { background:#fffbeb; }
+.ic-purple { background:#faf5ff; }
+.stat-lbl { font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+.stat-num { font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px; }
+
+/* Section label */
+.sec-hd { display:flex; align-items:center; gap:10px; margin:8px 0 18px; }
+.sec-dot { width:7px; height:7px; background:#3b82f6; border-radius:50%; }
+.sec-txt { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:1.5px; }
+.sec-ln  { flex:1; height:1px; background:#e2e8f0; }
+
+/* Sensor grid */
+.sensor-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(265px,1fr));
+  gap:16px; margin-bottom:28px;
+}
+
+.sensor-card {
+  background:#fff; border:1.5px solid #e2e8f0; border-radius:20px;
+  padding:22px; position:relative; overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all .25s;
+}
+.sensor-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:#10b981; border-radius:20px 20px 0 0;
+}
+.sensor-card.status-warning::after { background:#f59e0b; }
+.sensor-card.status-danger::after  { background:#ef4444; }
+.sensor-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.1); border-color:#bfdbfe; }
+
+.sc-row1 { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+.sc-ico {
+  width:46px; height:46px; background:#f8fafc; border:1.5px solid #e2e8f0;
+  border-radius:13px; display:flex; align-items:center; justify-content:center;
+}
+.sc-ico img { width:26px; height:26px; object-fit:contain; }
+.sc-badge { padding:4px 11px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
+.b-safe    { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+.b-warning { background:#fffbeb; color:#d97706; border:1px solid #fde68a; }
+.b-danger  { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+
+.sc-type { font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:3px; }
+.sc-name { font-size:14px; font-weight:600; color:#475569; margin-bottom:12px; }
+.sc-reading { display:flex; align-items:baseline; gap:5px; }
+.sc-val  { font-size:42px; font-weight:800; color:#0f172a; letter-spacing:-1.5px; line-height:1; font-variant-numeric:tabular-nums; }
+.sc-unit { font-size:14px; color:#94a3b8; font-weight:500; }
+.sc-foot { display:flex; justify-content:flex-end; margin-top:16px; }
+
+/* Actuator rows */
+.act-list { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
+.act-row {
+  background:#fff; border:1.5px solid #e2e8f0; border-radius:18px;
+  padding:16px 22px; display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all .25s;
+}
+.act-row.act-on { border-color:#bfdbfe; background:linear-gradient(135deg, #f8fbff, #f0fdf4); }
+.act-row:hover  { box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+
+.act-lft { display:flex; align-items:center; gap:14px; }
+.act-ic  {
+  width:46px; height:46px; background:#f8fafc; border:1.5px solid #e2e8f0;
+  border-radius:13px; display:flex; align-items:center; justify-content:center;
+}
+.act-ic img { width:26px; height:26px; object-fit:contain; }
+.act-nm { font-size:15px; font-weight:700; color:#0f172a; }
+.act-tp { font-size:11px; color:#94a3b8; margin-top:1px; }
+.act-st { display:flex; align-items:center; gap:6px; margin-top:5px; font-size:11px; font-weight:600; color:#94a3b8; }
+.dot-on  { width:7px; height:7px; background:#10b981; border-radius:50%; box-shadow:0 0 6px rgba(16,185,129,.5); }
+.dot-off { width:7px; height:7px; background:#cbd5e1; border-radius:50%; }
+
+.act-rgt { display:flex; align-items:center; gap:12px; }
+
+/* Toggle */
+.tog { position:relative; width:50px; height:26px; display:inline-block; }
+.tog input { opacity:0; width:0; height:0; }
+.tog-sl {
+  position:absolute; inset:0; background:#e2e8f0; border:1px solid #cbd5e1;
+  border-radius:34px; cursor:pointer; transition:all .25s;
+}
+.tog-sl::before {
+  content:''; position:absolute; width:20px; height:20px;
+  left:2px; top:2px; background:#fff; border-radius:50%;
+  transition:all .25s; box-shadow:0 1px 4px rgba(0,0,0,.15);
+}
+input:checked + .tog-sl { background:#3b82f6; border-color:#3b82f6; }
+input:checked + .tog-sl::before { transform:translateX(24px); }
+.tog-dis { opacity:.4; pointer-events:none; }
+
+/* Buttons */
+.rm-btn {
+  background:none; border:1.5px solid #e2e8f0; border-radius:20px; color:#94a3b8;
+  padding:5px 14px; font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
+  cursor:pointer; transition:all .2s;
+}
+.rm-btn:hover { border-color:#ef4444; color:#ef4444; }
+
+/* Add panel */
+.add-panel {
+  background:#fff; border:1.5px solid #e2e8f0; border-radius:18px;
+  padding:22px; margin-bottom:28px; box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.add-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+.add-panel select, .add-panel input[type=text] {
+  background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px;
+  padding:11px 14px; color:#0f172a; font-family:'Inter',sans-serif;
+  font-size:13px; flex:1; min-width:140px; outline:none; transition:all .2s;
+}
+.add-panel select:focus, .add-panel input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+.add-btn {
+  background:linear-gradient(135deg, #3b82f6, #06b6d4); border:none; border-radius:10px;
+  padding:11px 24px; font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:#fff;
+  cursor:pointer; transition:all .2s; white-space:nowrap;
+  box-shadow:0 4px 12px rgba(59,130,246,.3);
+}
+.add-btn:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(59,130,246,.4); }
+
+.viewer-note {
+  background:#fffbeb; border:1.5px solid #fde68a; border-radius:12px;
+  padding:12px 16px; font-size:12px; color:#92400e; margin-bottom:28px;
+}
+
+/* Statusbar */
+.statusbar {
+  border-top:1px solid #e2e8f0; padding:12px 28px;
+  display:flex; gap:24px; flex-wrap:wrap;
+  font-size:11px; color:#94a3b8; font-weight:500;
+  background:rgba(255,255,255,.8); backdrop-filter:blur(8px);
+}
+.sb-i { display:flex; align-items:center; gap:6px; }
+.sb-dot { width:6px; height:6px; background:#10b981; border-radius:50%; }
+.statusbar b { color:#3b82f6; font-weight:700; }
+
+/* Responsive */
+@media(max-width:640px){
+  .topbar { padding:0 16px; height:58px; }
+  .tb-brand-sub,.user-name { display:none; }
+  .main { padding:16px; }
+  .sensor-grid { grid-template-columns:1fr; }
+  .stat-row { grid-template-columns:1fr 1fr; }
+  .auth-box { padding:28px 20px; }
+  .add-row { flex-direction:column; }
+  .add-panel select,.add-panel input { min-width:unset; }
+  .sc-val { font-size:34px; }
+  .statusbar { gap:14px; padding:10px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-icon">🔥</div>
+      <h1>SecureKitchen</h1>
+      <p>Smart Kitchen Safety System · IIB20804</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Log In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- LOG IN -->
+    <div id="login-form">
+      <div class="field">
+        <label>Username</label>
+        <div class="field-wrap">
+          <input type="text" id="l-usr" placeholder="Enter username" autocomplete="username">
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="field-wrap">
+          <input type="password" id="l-pwd" placeholder="Enter password" autocomplete="current-password">
+          <button class="eye-btn" type="button" onclick="toggleEye('l-pwd',this)">👁</button>
+        </div>
+      </div>
+      <div class="auth-err" id="l-err"></div>
+      <button class="auth-submit" onclick="doLogin()">Log In →</button>
+    </div>
+
+    <!-- SIGN UP -->
+    <div id="signup-form" style="display:none">
+      <div class="field">
+        <label>Full Name</label>
+        <div class="field-wrap"><input type="text" id="r-name" placeholder="Your full name"></div>
+      </div>
+      <div class="field">
+        <label>Username</label>
+        <div class="field-wrap"><input type="text" id="r-usr" placeholder="Choose a username"></div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="field-wrap">
+          <input type="password" id="r-pwd" placeholder="Min. 6 characters">
+          <button class="eye-btn" type="button" onclick="toggleEye('r-pwd',this)">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="field-wrap">
+          <input type="password" id="r-pwd2" placeholder="Repeat password">
+          <button class="eye-btn" type="button" onclick="toggleEye('r-pwd2',this)">👁</button>
+        </div>
+      </div>
+      <div class="auth-err" id="r-err"></div>
+      <div class="auth-ok"  id="r-ok">✅ Account created! Redirecting to Log In...</div>
+      <button class="auth-submit" onclick="doRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-brand">
+      <div class="tb-brand-icon">🔥</div>
+      <div>
+        <div class="tb-brand-name">SecureKitchen</div>
+        <div class="tb-brand-sub">IIB20804 · SMART SAFETY DASHBOARD</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="user-chip">
+        <div class="user-av" id="user-av">A</div>
+        <span class="user-name" id="user-lbl">—</span>
+      </div>
+      <span class="role-tag" id="role-pill">—</span>
+      <button class="logout-btn" onclick="doLogout()">Sign out ↺</button>
+    </div>
+  </div>
+
+  <div id="alarm-banner">
+    <div class="alarm-txt">
+      <div class="alarm-blink"></div>
+      CRITICAL ALERT — automated safety sequence active
+    </div>
+    <button class="alarm-reset" id="alarm-reset-btn" onclick="resetAlarm()">Reset System</button>
+  </div>
+
+  <div class="main">
+
+    <!-- STAT ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-ic ic-blue">🛡️</div>
+        <div>
+          <div class="stat-lbl">System Status</div>
+          <div class="stat-num" id="stat-status" style="color:#16a34a">SAFE</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic ic-green">📡</div>
+        <div>
+          <div class="stat-lbl">Sensors Online</div>
+          <div class="stat-num" id="stat-sensors">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic ic-purple">⚙️</div>
+        <div>
+          <div class="stat-lbl">Actuators</div>
+          <div class="stat-num" id="stat-acts">—</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ic ic-amber">🔒</div>
+        <div>
+          <div class="stat-lbl">Security</div>
+          <div class="stat-num" style="font-size:16px;color:#2563eb">MQTTS+JWT</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-hd"><div class="sec-dot"></div><div class="sec-txt">Sensor Network</div><div class="sec-ln"></div></div>
+    <div class="sensor-grid" id="sensor-cards"></div>
+
+    <div class="sec-hd"><div class="sec-dot"></div><div class="sec-txt">Actuator Control</div><div class="sec-ln"></div></div>
+    <div class="act-list" id="actuator-list"></div>
+
+    <div id="admin-panel" style="display:none">
+      <div class="sec-hd"><div class="sec-dot"></div><div class="sec-txt">Deploy Device</div><div class="sec-ln"></div></div>
+      <div class="add-panel">
+        <div class="add-row">
+          <select id="dev-type"></select>
+          <input type="text" id="dev-name" placeholder="Device name e.g. Gas_Kitchen">
+          <button class="add-btn" onclick="createDevice()">+ Deploy</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewer-note" style="display:none" class="viewer-note">
+      👁️ Viewer mode — monitoring only. Contact admin for full control.
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="sb-i"><div class="sb-dot"></div> SecureKitchen v2.0</div>
+    <div class="sb-i">Platform: <b>Korean Mobius oneM2M</b></div>
+    <div class="sb-i">Security: <b>MQTTS · JWT · RBAC</b></div>
+    <div class="sb-i">Transport: <b>TLS port 8883</b></div>
+    <div class="sb-i" id="last-update">🕒 last sync: —</div>
+  </div>
+</div>
+
+<script>
+let TOKEN=null,ROLE=null,templates=[];
+function getUsers(){try{return JSON.parse(localStorage.getItem('sks_users')||'[]')}catch{return[]}}
+function saveUsers(u){localStorage.setItem('sks_users',JSON.stringify(u))}
+
+function switchTab(t){
+  document.getElementById('tab-login').classList.toggle('active',t==='login');
+  document.getElementById('tab-signup').classList.toggle('active',t==='signup');
+  document.getElementById('login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('signup-form').style.display=t==='signup'?'block':'none';
+  clearErr();
+}
+function clearErr(){
+  ['l-err','r-err'].forEach(id=>{const e=document.getElementById(id);e.classList.remove('show');e.textContent='';});
+  document.getElementById('r-ok').classList.remove('show');
+}
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.classList.add('show');}
+
+function toggleEye(id,btn){
+  const i=document.getElementById(id);
+  i.type=i.type==='password'?'text':'password';
+  btn.textContent=i.type==='password'?'👁':'🙈';
+}
+
+function doRegister(){
+  const name=document.getElementById('r-name').value.trim();
+  const usr=document.getElementById('r-usr').value.trim();
+  const pwd=document.getElementById('r-pwd').value;
+  const pwd2=document.getElementById('r-pwd2').value;
+  clearErr();
+  if(!name||!usr||!pwd) return showErr('r-err','All fields are required');
+  if(usr.length<3)      return showErr('r-err','Username min. 3 characters');
+  if(pwd.length<6)      return showErr('r-err','Password min. 6 characters');
+  if(pwd!==pwd2)        return showErr('r-err','Passwords do not match');
+  if(['admin','viewer'].includes(usr.toLowerCase())) return showErr('r-err','Username is reserved');
+  const users=getUsers();
+  if(users.find(u=>u.username===usr)) return showErr('r-err','Username already taken');
+  users.push({username:usr,password:pwd,name,role:'viewer'});
+  saveUsers(users);
+  document.getElementById('r-ok').classList.add('show');
+  setTimeout(()=>switchTab('login'),1800);
+}
+
+async function doLogin(){
+  const usr=document.getElementById('l-usr').value.trim();
+  const pwd=document.getElementById('l-pwd').value;
+  clearErr();
+  if(!usr||!pwd) return showErr('l-err','Please enter username and password');
+  try{
+    const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:usr,password:pwd})});
+    const data=await res.json();
+    if(!res.ok){
+      const users=getUsers();
+      const local=users.find(u=>u.username===usr&&u.password===pwd);
+      if(local){
+        const r2=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'viewer',password:'viewer123'})});
+        const d2=await r2.json();
+        if(r2.ok){enterApp(d2.token,d2.role,local.name||local.username);return;}
+      }
+      return showErr('l-err',data.error||'Invalid credentials');
+    }
+    enterApp(data.token,data.role,data.username);
+  }catch(e){showErr('l-err','Server unreachable — ensure backend is running');}
+}
+
+function enterApp(token,role,username){
+  TOKEN=token;ROLE=role;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('user-lbl').textContent=username;
+  document.getElementById('user-av').textContent=username.charAt(0).toUpperCase();
+  const pill=document.getElementById('role-pill');
+  pill.textContent=role;pill.className='role-tag '+(role==='admin'?'role-admin':'role-viewer');
+  document.getElementById('admin-panel').style.display=role==='admin'?'block':'none';
+  document.getElementById('viewer-note').style.display=role!=='admin'?'block':'none';
+  loadTemplates();refreshAll();setInterval(refreshAll,3000);
+}
+
+function doLogout(){
+  TOKEN=null;ROLE=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('l-usr').value='';
+  document.getElementById('l-pwd').value='';
+  clearErr();
+}
+
+function authFetch(url,opts={}){
+  opts.headers=Object.assign({},opts.headers,{'Authorization':'Bearer '+TOKEN});
+  return fetch(url,opts);
+}
+
+async function loadTemplates(){
+  try{
+    const res=await authFetch('/templates');
+    templates=await res.json();
+    const sel=document.getElementById('dev-type');
+    sel.innerHTML='';
+    templates.forEach((t,i)=>{sel.innerHTML+=`<option value="${i}">${t.type}</option>`;});
+  }catch(e){}
+}
+
+async function refreshAll(){
+  try{
+    const [dr,ar]=await Promise.all([authFetch('/devices'),authFetch('/alarm')]);
+    const devs=await dr.json(),alarm=await ar.json();
+    renderDevices(devs);
+    updateAlarm(alarm.alarmActive);
+    document.getElementById('last-update').innerHTML=`🕒 last sync: <b>${new Date().toLocaleTimeString()}</b>`;
+  }catch(e){}
+}
+
+function renderDevices(devices){
+  const sensors=devices.filter(d=>d.stream==='up');
+  const acts=devices.filter(d=>d.stream==='down');
+
+  document.getElementById('stat-sensors').textContent=sensors.length;
+  document.getElementById('stat-acts').textContent=acts.length;
+  const anyDanger=sensors.some(d=>d.status==='danger');
+  const anyWarn=sensors.some(d=>d.status==='warning');
+  const sEl=document.getElementById('stat-status');
+  if(anyDanger){sEl.textContent='DANGER';sEl.style.color='#dc2626';}
+  else if(anyWarn){sEl.textContent='WARNING';sEl.style.color='#d97706';}
+  else{sEl.textContent='SAFE';sEl.style.color='#16a34a';}
+
+  // sensors
+  const sg=document.getElementById('sensor-cards');
+  if(!sensors.length){
+    sg.innerHTML='<div style="padding:28px;background:#fff;border:1.5px solid #e2e8f0;border-radius:20px;color:#94a3b8;text-align:center;">No sensors deployed yet.</div>';
+  } else {
+    sg.innerHTML='';
+    sensors.forEach(d=>{
+      const rm=ROLE==='admin'?`<button class="rm-btn" onclick="deleteDevice('${esc(d.name)}')">Remove</button>`:'';
+      const ic=d.icon?`<img src="${d.icon}" onerror="this.style.display='none'">`:'<span style="font-size:22px">📡</span>';
+      const c=document.createElement('div');
+      c.className=`sensor-card status-${d.status}`;
+      c.innerHTML=`
+        <div class="sc-row1">
+          <div class="sc-ico">${ic}</div>
+          <span class="sc-badge b-${d.status}">${d.status}</span>
+        </div>
+        <div class="sc-type">${d.type||'sensor'}</div>
+        <div class="sc-name">${H(d.name)}</div>
+        <div class="sc-reading">
+          <span class="sc-val">${d.data}</span>
+          <span class="sc-unit">${d.unit||''}</span>
+        </div>
+        <div class="sc-foot">${rm}</div>`;
+      sg.appendChild(c);
+    });
+  }
+
+  // actuators
+  const al=document.getElementById('actuator-list');
+  if(!acts.length){
+    al.innerHTML='<div style="padding:28px;background:#fff;border:1.5px solid #e2e8f0;border-radius:18px;color:#94a3b8;text-align:center;">No actuators deployed yet.</div>';
+  } else {
+    al.innerHTML='';
+    acts.forEach(a=>{
+      const on=a.data==='1';
+      const ic=a.icon?`<img src="${a.icon}" onerror="this.style.display='none'">`:'<span style="font-size:22px">⚙️</span>';
+      const dis=ROLE!=='admin'?'tog-dis':'';
+      const rm=ROLE==='admin'?`<button class="rm-btn" onclick="deleteDevice('${esc(a.name)}')">Remove</button>`:'';
+      const r=document.createElement('div');
+      r.className=`act-row${on?' act-on':''}`;
+      r.innerHTML=`
+        <div class="act-lft">
+          <div class="act-ic">${ic}</div>
+          <div>
+            <div class="act-nm">${H(a.name)}</div>
+            <div class="act-tp">${a.type}</div>
+            <div class="act-st">
+              <div class="${on?'dot-on':'dot-off'}"></div>
+              ${on?'ACTIVE':'STANDBY'}
+            </div>
+          </div>
+        </div>
+        <div class="act-rgt">
+          ${rm}
+          <label class="tog ${dis}">
+            <input type="checkbox" ${on?'checked':''} ${ROLE!=='admin'?'disabled':''}
+              onchange="toggleAct('${a.typeIndex}','${esc(a.name)}',this.checked)">
+            <span class="tog-sl"></span>
+          </label>
+        </div>`;
+      al.appendChild(r);
+    });
+  }
+}
+
+function updateAlarm(active){
+  const b=document.getElementById('alarm-banner');
+  if(active)b.classList.add('active');else b.classList.remove('active');
+  const btn=document.getElementById('alarm-reset-btn');
+  if(btn)btn.style.display=active?'inline-block':'none';
+}
+async function resetAlarm(){await authFetch('/alarm/reset',{method:'POST'});refreshAll();}
+async function toggleAct(ti,name,on){
+  if(ROLE!=='admin')return;
+  await authFetch(`/devices/${encodeURIComponent(name)}?typeIndex=${ti}&value=${on?'1':'0'}`,{method:'POST'});
+  refreshAll();
+}
+async function createDevice(){
+  if(ROLE!=='admin')return alert('Admin rights required');
+  const ti=document.getElementById('dev-type').value;
+  const nm=document.getElementById('dev-name').value.trim();
+  if(!nm)return alert('Please enter a device name');
+  await authFetch(`/devices?type=${ti}&name=${encodeURIComponent(nm)}`,{method:'POST'});
+  document.getElementById('dev-name').value='';
+  setTimeout(refreshAll,400);
+}
+async function deleteDevice(name){
+  if(ROLE!=='admin')return;
+  if(!confirm(`Delete "${name}"?`))return;
+  await authFetch(`/devices/${encodeURIComponent(name)}`,{method:'DELETE'});
+  refreshAll();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('auth-screen').style.display!=='none')doLogin();
+});
+function H(s){if(!s)return'';return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function esc(s){return s.replace(/'/g,"\\'");}
+window.switchTab=switchTab;window.toggleEye=toggleEye;
+window.doLogin=doLogin;window.doLogout=doLogout;window.doRegister=doRegister;
+window.resetAlarm=resetAlarm;window.toggleAct=toggleAct;
+window.createDevice=createDevice;window.deleteDevice=deleteDevice;
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+    "cse": {
+        "ip": "127.0.0.1",
+        "port": 7579,
+        "id": "Mobius",
+        "name": "Mobius",
+        "release": "1",
+        "acp_required": false
+    },
+    "app": {
+    "ip": "10.49.156.91",
+    "port": 8369
+    },
+    "templates": [
+        {
+            "stream": "up",
+            "type": "Gas_MQ2",
+            "unit": "ppm",
+            "min": 200,
+            "max": 400,
+            "freq": 5,
+            "icon": "images/icon-gas.png"
+        },
+        {
+            "stream": "up",
+            "type": "Temperature",
+            "unit": "°C",
+            "min": 24,
+            "max": 40,
+            "freq": 10,
+            "icon": "images/icon-thermo.png"
+        },
+        {
+            "stream": "up",
+            "type": "Humidity",
+            "unit": "%",
+            "min": 40,
+            "max": 75,
+            "freq": 10,
+            "icon": "images/icon-water.png"
+        },
+        {
+            "stream": "down",
+            "type": "ExhaustFan",
+            "unit": "On/Off",
+            "min": 0,
+            "max": 1,
+            "icon": "images/icon-fan.png"
+        },
+        {
+            "stream": "down",
+            "type": "Buzzer",
+            "unit": "dB",
+            "min": 0,
+            "max": 1,
+            "icon": "images/icon-buzzer.png"
+        },
+        {
+            "stream": "down",
+            "type": "LED_Warning",
+            "unit": "mcd",
+            "min": 0,
+            "max": 1,
+            "icon": "images/icon-light.png"
+        }
+    ]
+}
