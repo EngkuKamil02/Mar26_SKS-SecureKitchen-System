@@ -3,7 +3,7 @@
 
 ---
 
-## Team — Mar26_GROUP8
+## Team — Mar26_SecureKitchen System (SKS)
 
 | Name | Student ID | Role |
 |------|-----------|------|
