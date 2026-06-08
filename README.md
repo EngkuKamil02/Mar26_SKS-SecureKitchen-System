@@ -157,7 +157,7 @@ CSE target: http://127.0.0.1:7579
 
 ### Step 6 — Expose Dashboard via ngrok (HTTPS)
 
-> **Important:** Your lecturer requires HTTPS access — use ngrok to get a public HTTPS URL.
+> **Important:** lecturer requires HTTPS access so we decide to use ngrok to get a public HTTPS URL.
 
 #### Install ngrok
 Download from: https://ngrok.com/download
@@ -235,6 +235,7 @@ Upload to ESP32. Open Serial Monitor (115200 baud):
 - All sensor data transmitted over encrypted channel
 - Port 8883 (standard MQTTS port)
 - Verified using Wireshark — shows TLSv1.2 Application Data (encrypted)
+https://github.com/EngkuKamil02/Mar26_SKS-SecureKitchen-System/blob/main/screenshots/Wireshark.png
 
 ### 2. HTTPS via ngrok
 - Dashboard exposed publicly via ngrok HTTPS tunnel
