@@ -3,96 +3,267 @@
 
 ---
 
-## Team
-- Engku Ahmad Kamil (52224224256) — Leader
-- Fatin Farzana (52224224051)
-- Nur Izzah (52224224189)
-- Nurin Irdina (52224224328)
+## Team — Mar26_GROUP8
+
+| Name | Student ID | Role |
+|------|-----------|------|
+| Engku Ahmad Kamil Bin Engku Dandam | 52224224256 | Leader |
+| Nur Izzah Binti Mohd Razali | 52224224189 | Member |
+| Fatin Farzana Binti Faizal | 52224224051 | Member |
+| Nurin Irdina Binti Hj.Saiful Bahri | 52224224328 | Member |
+
+---
+
+## System Overview
+
+SecureKitchen is an IoT-based smart kitchen safety monitoring system that detects gas leaks, high temperature, and abnormal humidity. It uses an ESP32 microcontroller with MQ-2 and DHT22 sensors, communicates over **MQTTS (TLS port 8883)**, stores data on a **Mobius oneM2M platform**, and displays live data on a **Node.js dashboard** with JWT authentication and RBAC.
+
+```
+ESP32 (MQ2 + DHT22)
+    ↓  MQTTS (TLS port 8883)
+Mosquitto MQTT Broker
+    ↓  MQTT (port 1883 internal)
+Mobius oneM2M Server (port 7579)
+    ↓  HTTP polling every 5 seconds
+SKS Dashboard (port 8369)
+```
+
+---
+
+## Hardware Requirements
+
+| Component | Pin |
+|-----------|-----|
+| MQ-2 Gas Sensor (AO) | GPIO 34 |
+| DHT22 Temperature & Humidity | GPIO 4 |
+| Relay — Exhaust Fan | GPIO 26 |
+| Relay — Buzzer | GPIO 27 |
+| NeoPixel LED Strip (8 LEDs) | GPIO 13 |
+
+---
+
+## Software Requirements
+
+- Node.js v18+
+- MySQL (for Mobius)
+- Mosquitto MQTT Broker v2.1+
+- Arduino IDE 2.x (for ESP32)
+- Arduino Libraries: WiFi, WiFiClientSecure, PubSubClient, DHT, ArduinoJson, Adafruit_NeoPixel
 
 ---
 
 ## Setup Instructions
 
-### Step 1 — Install Node.js dependencies
+### Step 1 — Start Mosquitto with MQTTS
+
+Edit `C:\Program Files\mosquitto\mosquitto.conf`:
+
+```
+listener 1883
+allow_anonymous true
+
+listener 8883
+cafile C:\path\to\Mobius-master\mobius\ca-crt.pem
+certfile C:\path\to\Mobius-master\mobius\server-crt.pem
+keyfile C:\path\to\Mobius-master\mobius\server-key.pem
+allow_anonymous true
+```
+
+Then start Mosquitto (run as Administrator):
+```
+net start mosquitto
+```
+
+---
+
+### Step 2 — Start Mobius oneM2M Server
+
+```bash
+cd Mobius-master
+node mobius.js
+```
+
+Wait until you see:
+```
+mobius server running at 7579 port
+sgn_mqtt_client is connected
+```
+
+---
+
+### Step 3 — Install SKS dependencies
+
 ```bash
 cd SKS
 npm install
 ```
 
-### Step 2 — Start ACME CSE (oneM2M platform)
-Make sure ACME CSE is running on `localhost:8080`.
-Default CSE name: `Mobius`
+---
 
-### Step 3 — Start the SKS application
+### Step 4 — Configure SKS
+
+Edit `config/default.json`:
+
+```json
+{
+    "cse": {
+        "ip": "127.0.0.1",
+        "port": 7579,
+        "id": "Mobius",
+        "name": "Mobius",
+        "release": "1",
+        "acp_required": false
+    },
+    "app": {
+        "ip": "YOUR_PC_IP",
+        "port": 8369
+    }
+}
+```
+
+Replace `YOUR_PC_IP` with your actual PC IP (run `ipconfig` to find it).
+
+---
+
+### Step 5 — Start SKS Dashboard
+
 ```bash
 node app.js
 ```
 
-### Step 4 — Open the dashboard
-Go to: http://localhost:8369
+Expected output:
+```
+SecureKitchen System (SKS) started
+Dashboard : http://localhost:8369
+CSE target: http://127.0.0.1:7579
+[AUTO-REGISTER] Gas → 201
+[AUTO-REGISTER] Suhu → 201
+[AUTO-REGISTER] Kelembapan → 201
+```
 
-### Step 5 — Login
-| Role   | Username | Password  | Can do                        |
-|--------|----------|-----------|-------------------------------|
-| Admin  | admin    | admin123  | View + control + add + reset  |
-| Viewer | viewer   | viewer123 | View only (read-only)         |
+---
 
-### Step 6 — Add devices
-Click "Add Device" and add these 6 devices:
+### Step 6 — Flash ESP32
 
-| Name          | Type         |
-|---------------|--------------|
-| GasSensor1    | Gas_MQ2      |
-| TempSensor1   | Temperature  |
-| HumSensor1    | Humidity     |
-| ExhaustFan1   | ExhaustFan   |
-| Buzzer1       | Buzzer       |
-| LED1          | LED_Warning  |
+Open `SKS_ESP32/SKS_ESP32.ino` in Arduino IDE.
+
+Update these lines:
+```cpp
+const char* WIFI_SSID     = "YOUR_WIFI_NAME";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* MQTT_BROKER   = "YOUR_PC_IP";  // same IP as above
+```
+
+Upload to ESP32. Open Serial Monitor (115200 baud). You should see:
+```
+[WiFi] Connected! IP: 10.x.x.x
+[MQTT] Connected via MQTTS!
+[SENSOR] Gas: 160 ppm | Temp: 32.0 C | Hum: 69.5%
+[MQTT] Gas = 160 → OK
+```
+
+---
+
+### Step 7 — Open Dashboard
+
+Go to: `http://localhost:8369`
+
+---
+
+## Login Credentials
+
+| Role | Username | Password | Permissions |
+|------|----------|----------|-------------|
+| Admin | admin | admin123 | View + Control + Add + Delete + Reset alarm |
+| Viewer | viewer | viewer123 | View only (read-only) |
+
+---
+
+## Devices
+
+| Dashboard Name | Type | Direction |
+|---------------|------|-----------|
+| Gas | Gas_MQ2 | Sensor (up) |
+| Suhu | Temperature | Sensor (up) |
+| Kelembapan | Humidity | Sensor (up) |
+| Kipas | ExhaustFan | Actuator (down) |
+| Alarm | Buzzer | Actuator (down) |
+| Lampu | LED_Warning | Actuator (down) |
 
 ---
 
 ## Security Features
 
-### 1. JWT Authentication
-- Every API request requires a valid JWT token in the `Authorization: Bearer <token>` header
+### 1. MQTTS — TLS Encrypted MQTT (Port 8883)
+- ESP32 uses `WiFiClientSecure` with `setInsecure()` for TLS
+- All sensor data transmitted over encrypted TLS channel
+- Port 8883 (standard MQTTS port)
+- Verified using Wireshark — shows TLSv1.2 Application Data
+
+### 2. JWT Authentication
+- Every API request requires a valid JWT token
+- Header: `Authorization: Bearer <token>`
 - Tokens expire after 8 hours
 - Login endpoint: `POST /login`
+- Secret key: `SKS_SecureKitchen_Secret_2026`
 
-### 2. Role-Based Access Control (RBAC)
+### 3. Role-Based Access Control (RBAC)
 - **Admin**: full access — view, add, delete, control actuators, reset alarm
-- **Viewer**: read-only — cannot control actuators or add/delete devices
+- **Viewer**: read-only — cannot control actuators or modify devices
 
-### 3. Alarm Logic (Auto-trigger)
-| Sensor      | Warning Threshold | Danger Threshold |
-|-------------|-------------------|------------------|
-| Gas (MQ-2)  | 500 ppm           | 800 ppm          |
-| Temperature | 45 °C             | 60 °C            |
-| Humidity    | 80 %              | 90 %             |
+### 4. Alarm Auto-Trigger Logic
 
-When danger threshold is crossed:
-→ Exhaust fan turns ON automatically
-→ Buzzer sounds automatically
-→ LED warning activates automatically
-→ Red alarm banner appears on dashboard
+| Sensor | Safe | Warning | Danger |
+|--------|------|---------|--------|
+| Gas (MQ-2) | < 299 ppm | 299–499 ppm | ≥ 500 ppm |
+| Temperature | < 38 °C | 38–39.9 °C | ≥ 40 °C |
+| Humidity | < 85 % | 85–94.9 % | ≥ 95 % |
 
-### 4. oneM2M Platform (ACME CSE)
+When **DANGER** threshold is crossed:
+- Exhaust fan turns ON automatically
+- Buzzer sounds automatically
+- LED turns RED automatically
+- Dashboard shows DANGER status
+
+### 5. oneM2M Platform (Mobius)
 - All devices registered as Application Entities (AE)
 - Sensor data stored in DATA containers (ContentInstances)
-- Actuators use COMMAND containers + Subscriptions for real-time push
-- Access Control Policies (ACP) applied per device
+- Actuators use COMMAND containers + Subscriptions
+- Platform: Mobius v2a on port 7579
 
 ---
 
 ## API Endpoints
 
-| Method | Endpoint         | Auth    | Role    | Description             |
-|--------|------------------|---------|---------|-------------------------|
-| POST   | /login           | No      | Any     | Get JWT token           |
-| GET    | /me              | JWT     | Any     | Get current user info   |
-| GET    | /devices         | JWT     | Any     | List all devices        |
-| POST   | /devices         | JWT     | Admin   | Add new device          |
-| POST   | /devices/:name   | JWT     | Admin   | Update actuator value   |
-| DELETE | /devices/:name   | JWT     | Admin   | Remove device           |
-| GET    | /alarm           | JWT     | Any     | Get alarm status        |
-| POST   | /alarm/reset     | JWT     | Admin   | Reset alarm + actuators |
-| GET    | /templates       | JWT     | Any     | Get device templates    |
+| Method | Endpoint | Auth | Role | Description |
+|--------|----------|------|------|-------------|
+| POST | /login | No | Any | Get JWT token |
+| GET | /me | JWT | Any | Get current user info |
+| GET | /devices | JWT | Any | List all devices + live data |
+| POST | /devices | JWT | Admin | Add new device |
+| POST | /devices/:name | JWT | Admin | Control actuator |
+| DELETE | /devices/:name | JWT | Admin | Remove device |
+| GET | /alarm | JWT | Any | Get alarm status |
+| POST | /alarm/reset | JWT | Admin | Reset alarm + turn off actuators |
+| GET | /templates | JWT | Any | Get device templates |
+
+---
+
+## MQTTS Topics
+
+| Topic | Direction | Description |
+|-------|-----------|-------------|
+| `/oneM2M/req/ESP32/Mobius2/json` | ESP32 → Mobius | Sensor data publish |
+| `/oneM2M/req/Mobius2/ESP32/json` | Mobius → ESP32 | Actuator commands |
+
+---
+
+## Quick Start (All-in-One)
+
+Double-click `start_SKS.bat` on Desktop (Run as Administrator).
+
+This automatically starts:
+1. Mosquitto MQTTS broker
+2. Mobius oneM2M server
+3. SKS Dashboard
+4. Opens browser at `http://localhost:8369`
