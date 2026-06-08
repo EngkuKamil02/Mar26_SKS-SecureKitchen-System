@@ -235,7 +235,7 @@ Upload to ESP32. Open Serial Monitor (115200 baud):
 - All sensor data transmitted over encrypted channel
 - Port 8883 (standard MQTTS port)
 - Verified using Wireshark — shows TLSv1.2 Application Data (encrypted)
-https://github.com/EngkuKamil02/Mar26_SKS-SecureKitchen-System/blob/main/screenshots/Wireshark.png
+![https://github.com/EngkuKamil02/Mar26_SKS-SecureKitchen-System/blob/main/screenshots/Wireshark.png]
 
 ### 2. HTTPS via ngrok
 - Dashboard exposed publicly via ngrok HTTPS tunnel
