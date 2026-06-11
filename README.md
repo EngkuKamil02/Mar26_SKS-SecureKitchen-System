@@ -156,7 +156,7 @@ CSE target: http://127.0.0.1:7579
 [AUTO-REGISTER] Kelembapan → 201
 ```
 
-![app.js running](screenshots/app%20js.jpeg)
+![app.js running](screenshots/app.js.jpeg)
 
 ---
 
