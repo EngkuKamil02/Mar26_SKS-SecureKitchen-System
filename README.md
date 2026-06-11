@@ -366,7 +366,8 @@ Then separately run ngrok:
 ngrok http 8369
 ```
 
-Share the HTTPS URL with your lecturer.
+Share the HTTPS URL with the public you want for example my URL:
+'https://diligence-motor-precise.ngrok-free.dev/'
 
 ---
 ---
