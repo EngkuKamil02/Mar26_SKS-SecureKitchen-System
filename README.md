@@ -1,7 +1,5 @@
 # SecureKitchen System (SKS)
 
-![System Architecture](screenshots/System%20Overview.jpeg)
-
 ### IIB20804 IoT Application Security — Mini Project
 
 ---
@@ -25,25 +23,6 @@ SecureKitchen is an IoT-based smart kitchen safety monitoring system that detect
 
 ![System Architecture](screenshots/System%20Overview.jpeg)
 
-```text
-ESP32 (MQ2 + DHT22)
-
-       ↓  MQTTS (TLS port 8883)
-
-Mosquitto MQTT Broker
-
-       ↓  MQTT (port 1883 internal)
-
-Mobius oneM2M Server (port 7579)
-
-       ↓  HTTP polling every 5 seconds
-
-SKS Dashboard (port 8369)
-
-       ↓  ngrok HTTPS tunnel
-
-https://xxxx.ngrok-free.app ← lecturer accesses here
-```
 
 ---
 
