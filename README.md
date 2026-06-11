@@ -19,7 +19,7 @@
 
 SecureKitchen is an IoT-based smart kitchen safety monitoring system that detects gas leaks, high temperature, and abnormal humidity. It uses an ESP32 microcontroller with MQ-2 and DHT22 sensors, communicates over **MQTTS (TLS port 8883)**, stores data on a **Mobius oneM2M platform**, and displays live data on a **Node.js dashboard** protected by JWT authentication and RBAC. The dashboard is exposed publicly via **ngrok HTTPS**.
 
-![System Overview](screenshots/System%20Overview.jpeg)
+![System Overview](screenshots/System_Overview.jpeg)
 
 ```
 ESP32 (MQ2 + DHT22)
@@ -37,7 +37,7 @@ https://xxxx.ngrok-free.app  ← lecturer accesses here
 
 ## 🔌 Circuit Diagram
 
-![Circuit Diagram](screenshots/Circuit%20diagram.jpeg)
+![Circuit Diagram](screenshots/Circuit_diagram.jpeg)
 
 ---
 
@@ -101,7 +101,7 @@ mobius server running at 7579 port
 sgn_mqtt_client is connected
 ```
 
-![Mobius Server Running](screenshots/mobius.js.jpeg)
+![Mobius Server Running](screenshots/mobius_js.jpeg)
 
 ---
 
@@ -156,7 +156,7 @@ CSE target: http://127.0.0.1:7579
 [AUTO-REGISTER] Kelembapan → 201
 ```
 
-![app.js running](screenshots/app.js.jpeg)
+![app.js running](screenshots/app_js.jpeg)
 
 ---
 
@@ -210,6 +210,8 @@ Upload to ESP32. Open Serial Monitor (115200 baud):
 [MQTT] Gas = 160 → OK
 ```
 
+![Arduino IDE & Serial Monitor](screenshots/Arduino.jpeg)
+
 ---
 
 ## 🖥️ Dashboard Screenshots
@@ -217,12 +219,12 @@ Upload to ESP32. Open Serial Monitor (115200 baud):
 ### ✅ Safe State
 All sensors within normal range. Actuators on standby.
 
-![Safe State](screenshots/Safe%20state.jpeg)
+![Safe State](screenshots/Safe_state.jpeg)
 
 ### ⚠️ Warning State
 Gas level between 299–499 ppm. System monitoring closely.
 
-![Warning State](screenshots/Warning%20state.jpeg)
+![Warning State](screenshots/Warning_state.jpeg)
 
 ### 🚨 Danger State (Critical Alert)
 Gas level ≥ 500 ppm. Exhaust fan, buzzer, and LED auto-triggered.
@@ -241,7 +243,7 @@ Admin can control actuators, deploy new devices, and remove existing ones.
 ### Resource Browser
 All devices registered as Application Entities (AE) in Mobius. Sensor data stored as ContentInstances (CIN) inside DATA containers.
 
-![Mobius Monitor](screenshots/mobius%20monitor.jpeg)
+![Mobius Monitor](screenshots/mobius_monitor.jpeg)
 
 ### MySQL Database (mobiusdb)
 Sensor data persisted in MySQL via Mobius CIN table.
@@ -281,6 +283,8 @@ Sensor data persisted in MySQL via Mobius CIN table.
 | Temperature | < 38 °C | 38–39.9 °C | ≥ 40 °C |
 | Humidity | < 85 % | 85–94.9 % | ≥ 95 % |
 
+![Threshold Code](screenshots/threshold.jpeg)
+
 When **DANGER** threshold is crossed:
 - 🌀 Exhaust fan turns ON automatically
 - 🔔 Buzzer sounds automatically
@@ -300,6 +304,12 @@ When **DANGER** threshold is crossed:
 |------|----------|----------|-------------|
 | Admin | `admin` | `admin123` | View + Control + Add + Delete + Reset alarm |
 | Viewer | `viewer` | `viewer123` | View only (read-only) |
+
+### Login Page
+![Login Page](screenshots/login.jpeg)
+
+### Sign Up Page
+![Sign Up Page](screenshots/signup.jpeg)
 
 ---
 
