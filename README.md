@@ -101,7 +101,7 @@ mobius server running at 7579 port
 sgn_mqtt_client is connected
 ```
 
-![Mobius Server Running](screenshots/mobius%20js.jpeg)
+![Mobius Server Running](screenshots/mobius.js.jpeg)
 
 ---
 
