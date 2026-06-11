@@ -369,7 +369,12 @@ ngrok http 8369
 Share the HTTPS URL with your lecturer.
 
 ---
+---
+## Prototype look like:
+![Sign Up Page](/screenshots/prototype.jpeg)
 
+---
+---
 ## 📁 Folder Structure
 
 ```
