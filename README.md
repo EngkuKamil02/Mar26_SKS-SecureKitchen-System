@@ -177,7 +177,7 @@ ngrok http 8369
 
 You will see output like:
 ```
-Forwarding  https://abcd1234.ngrok-free.app → http://localhost:8369
+Forwarding  https://diligence-motor-precise.ngrok-free.dev → http://localhost:8369
 ```
 
 #### Share with lecturer
@@ -367,7 +367,7 @@ ngrok http 8369
 ```
 
 Share the HTTPS URL with the public you want for example my URL:
-'https://diligence-motor-precise.ngrok-free.dev/'
+`https://diligence-motor-precise.ngrok-free.dev/`
 
 ---
 ---
